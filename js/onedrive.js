@@ -1,97 +1,44 @@
-// CONFIGURAZIONE -----------------------------------------------------
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Olio</title>
 
-const CLIENT_ID = "INSERISCI_IL_TUO_CLIENT_ID";
-const REDIRECT_URI = "https://costantino1977.github.io/gestione-olio/";
-const FOLDER_ID = "9879CD235CBFE234!110";
-const FILE_NAME = "dati-olio.json";
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-// MSAL ---------------------------------------------------------------
+  <!-- Google API -->
+  <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 
-const msalConfig = {
-  auth: {
-    clientId: CLIENT_ID,
-    redirectUri: REDIRECT_URI
-  }
-};
-
-const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-// Ottiene token
-async function getToken() {
-  const account = msalInstance.getAllAccounts()[0];
-
-  if (!account) {
-    const login = await msalInstance.loginPopup({
-      scopes: ["Files.ReadWrite", "Files.ReadWrite.All"]
-    });
-    return login.accessToken;
-  }
-
-  const token = await msalInstance.acquireTokenSilent({
-    account,
-    scopes: ["Files.ReadWrite", "Files.ReadWrite.All"]
-  });
-
-  return token.accessToken;
-}
-
-// SALVATAGGIO --------------------------------------------------------
-
-async function salvaSuOneDrive(dati) {
-  const token = await getToken();
-
-  const json = JSON.stringify(dati, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-
-  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${FOLDER_ID}:/${FILE_NAME}:/content`;
-
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Authorization": `Bearer ${token}`
-    },
-    body: blob
-  });
-
-  return response.ok;
-}
-
-// LETTURA ------------------------------------------------------------
-
-async function leggiDaOneDrive() {
-  const token = await getToken();
-
-  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${FOLDER_ID}:/${FILE_NAME}:/content`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${token}`
+  <!-- Funzioni richieste da Google -->
+  <script>
+    function gapiLoaded() {
+      gapi.load("client", initializeGapiClient);
     }
-  });
 
-  if (!response.ok) return null;
+    function gisLoaded() {
+      // lasciato vuoto, gestito da google-drive.js
+    }
+  </script>
+</head>
 
-  return await response.json();
-}
+<body>
 
-// FUNZIONI DI UTILITÀ ------------------------------------------------
+  <!-- I TUOI CONTENUTI -->
+  <div id="app"></div>
 
-async function salvaDati() {
-  const dati = {
-    livello: Math.floor(Math.random() * 100),
-    data: new Date().toISOString()
-  };
+  <!-- PULSANTI GOOGLE DRIVE -->
+  <button onclick="salvaDati()">Salva su Google Drive</button>
+  <button onclick="leggiDati()">Leggi da Google Drive</button>
+  <pre id="output"></pre>
 
-  const ok = await salvaSuOneDrive(dati);
+  <!-- I TUOI SCRIPT -->
+  <script src="js/db.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/onedrive.js"></script>
 
-  document.getElementById("output").textContent =
-    ok ? "Dati salvati correttamente!" : "Errore nel salvataggio.";
-}
+  <!-- GOOGLE DRIVE -->
+  <script src="js/google-drive.js"></script>
 
-async function leggiDati() {
-  const dati = await leggiDaOneDrive();
-
-  document.getElementById("output").textContent =
-    dati ? JSON.stringify(dati, null, 2) : "Nessun dato trovato.";
-}
+</body>
+</html>
