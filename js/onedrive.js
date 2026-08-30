@@ -95,3 +95,11 @@ async function leggiDati() {
   document.getElementById("output").textContent =
     dati ? JSON.stringify(dati, null, 2) : "Nessun dato trovato.";
 }
+async function salvaDati() {
+    const data = JSON.stringify(db);
+    document.getElementById("output").textContent = "Salvataggio non ancora configurato.";
+}
+
+async function leggiDati() {
+    document.getElementById("output").textContent = "Lettura non ancora configurata.";
+}
