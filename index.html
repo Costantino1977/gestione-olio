@@ -1,0 +1,2619 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<title>Gestione Olio v5</title>
+
+<style>
+:root{
+ --g:#1f5133;
+ --o:#708238;
+ --bg:#f6f4eb;
+ --tx:#18221b;
+ --mu:#657068;
+ --ln:#dbe2da;
+ --red:#a93636
+}
+
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ font:15px system-ui;
+ color:var(--tx);
+ background:var(--bg)
+}
+
+header{
+ background:var(--g);
+ color:#fff;
+ padding:18px 24px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center
+}
+
+h1{margin:0;font-size:22px}
+small{opacity:.8}
+
+.app{
+ display:grid;
+ grid-template-columns:210px 1fr;
+ min-height:calc(100vh - 66px)
+}
+
+nav{
+ background:#fff;
+ padding:16px 10px;
+ border-right:1px solid var(--ln)
+}
+
+nav button{
+ display:block;
+ width:100%;
+ border:0;
+ background:none;
+ text-align:left;
+ padding:11px;
+ border-radius:8px;
+ font-weight:650;
+ cursor:pointer
+}
+
+nav button.active,
+nav button:hover{
+ background:#e8f0e9;
+ color:var(--g)
+}
+
+main{
+ padding:24px;
+ min-width:0
+}
+
+.view{display:none}
+.view.active{display:block}
+
+.title{
+ display:flex;
+ justify-content:space-between;
+ align-items:end;
+ gap:12px;
+ margin-bottom:17px
+}
+
+.title h2{margin:0}
+.title p{margin:4px 0;color:var(--mu)}
+
+.actions{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap
+}
+
+.btn{
+ border:1px solid var(--ln);
+ background:#fff;
+ padding:9px 12px;
+ border-radius:8px;
+ font-weight:650;
+ cursor:pointer
+}
+
+.primary{
+ background:var(--g);
+ color:#fff;
+ border-color:var(--g)
+}
+
+.danger{color:var(--red)}
+
+.cards{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:12px;
+ margin-bottom:18px
+}
+
+.card,.panel{
+ background:#fff;
+ border:1px solid var(--ln);
+ border-radius:11px
+}
+
+.card{padding:15px}
+
+.card span{
+ display:block;
+ color:var(--mu);
+ font-size:11px;
+ text-transform:uppercase;
+ font-weight:750
+}
+
+.card b{
+ display:block;
+ color:var(--g);
+ font-size:23px;
+ margin-top:5px
+}
+
+.story{
+ background:#eef2e4;
+ border-left:4px solid var(--o);
+ padding:12px 15px;
+ border-radius:0 8px 8px 0;
+ margin-bottom:17px
+}
+
+.panel{
+ overflow:hidden;
+ margin-bottom:17px
+}
+
+.panel h3{
+ margin:0;
+ padding:13px 15px;
+ border-bottom:1px solid var(--ln)
+}
+
+.pad{padding:16px}
+.table{overflow:auto}
+
+table{
+ width:100%;
+ border-collapse:collapse;
+ min-width:760px
+}
+
+th,td{
+ padding:9px 11px;
+ border-bottom:1px solid var(--ln);
+ text-align:left;
+ white-space:nowrap
+}
+
+th{
+ font-size:11px;
+ text-transform:uppercase;
+ color:var(--mu);
+ background:#fafbf9
+}
+
+.num{text-align:right}
+
+.empty{
+ text-align:center;
+ color:var(--mu);
+ padding:28px
+}
+
+.icon{
+ border:0;
+ background:none;
+ font-size:17px;
+ cursor:pointer
+}
+
+.edit{color:var(--g)}
+.delete{color:var(--red)}
+
+.pill{
+ border:0;
+ border-radius:999px;
+ padding:4px 9px;
+ font-weight:700;
+ cursor:pointer
+}
+
+.yes{
+ background:#dceee1;
+ color:#24633a
+}
+
+.no{
+ background:#f7e2df;
+ color:#8e332c
+}
+
+dialog{
+ border:0;
+ border-radius:13px;
+ padding:0;
+ width:min(680px,calc(100% - 24px));
+ box-shadow:0 18px 55px #0005
+}
+
+dialog::backdrop{background:#14201999}
+
+.mh{
+ background:var(--g);
+ color:#fff;
+ padding:15px 18px;
+ display:flex;
+ justify-content:space-between
+}
+
+.mh h3{margin:0}
+.mb{padding:18px}
+
+.grid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:13px
+}
+
+.field.full{grid-column:1/-1}
+
+.field label{
+ display:block;
+ font-size:12px;
+ color:var(--mu);
+ font-weight:700;
+ margin-bottom:4px
+}
+
+.field input,
+.field textarea,
+.field select{
+ width:100%;
+ padding:9px;
+ border:1px solid #cad3ca;
+ border-radius:7px;
+ font:inherit
+}
+
+.ma{
+ display:flex;
+ justify-content:flex-end;
+ gap:8px;
+ margin-top:17px
+}
+
+.setup{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:15px
+}
+
+.note{
+ color:var(--mu);
+ font-size:13px
+}
+
+@media(max-width:900px){
+ .app{grid-template-columns:1fr}
+
+ nav{
+  display:flex;
+  overflow:auto;
+  border:0;
+  border-bottom:1px solid var(--ln)
+ }
+
+ nav button{
+  width:auto;
+  white-space:nowrap
+ }
+
+ .cards{grid-template-columns:1fr 1fr}
+ .setup{grid-template-columns:1fr}
+}
+
+@media(max-width:560px){
+ .cards,.grid{grid-template-columns:1fr}
+
+ .title{
+  align-items:start;
+  flex-direction:column
+ }
+}
+
+@media print{
+ header,nav,.actions,.icon,dialog,#settings{
+  display:none!important
+ }
+
+ body,.app,main{
+  display:block;
+  background:#fff;
+  padding:0
+ }
+
+ .view{display:none!important}
+ .view.active{display:block!important}
+
+ .panel,.card{
+  box-shadow:none;
+  break-inside:avoid
+ }
+
+ .table{overflow:visible}
+
+ table{
+  min-width:0;
+  font-size:10px
+ }
+
+ th,td{
+  padding:5px;
+  white-space:normal
+ }
+
+ .cards{grid-template-columns:repeat(5,1fr)}
+ .card b{font-size:16px}
+
+ @page{
+  size:landscape;
+  margin:12mm
+ }
+}
+
+/* v3 improvements */
+.badge-sync{
+ display:inline-flex;
+ align-items:center;
+ gap:6px;
+ padding:5px 9px;
+ border-radius:999px;
+ background:#ffffff22;
+ color:#fff;
+ font-size:12px;
+ font-weight:700;
+}
+.filters{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap;
+ margin:0 0 12px;
+}
+.filters input,.filters select{
+ border:1px solid var(--ln);
+ background:#fff;
+ padding:8px 10px;
+ border-radius:8px;
+ font:inherit;
+}
+.kpi-grid{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:12px;
+}
+.kpi-box{
+ padding:14px;
+ border:1px solid var(--ln);
+ border-radius:10px;
+ background:#fff;
+}
+.kpi-box span{
+ display:block;
+ color:var(--mu);
+ font-size:11px;
+ text-transform:uppercase;
+ font-weight:750;
+}
+.kpi-box b{
+ display:block;
+ color:var(--g);
+ font-size:20px;
+ margin-top:4px;
+}
+.history-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+ padding:10px 0;
+ border-bottom:1px solid var(--ln);
+}
+.history-row:last-child{border-bottom:0}
+.history-meta{font-size:12px;color:var(--mu)}
+.client-list{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:8px;
+}
+.client-chip{
+ border:1px solid var(--ln);
+ background:#fafbf9;
+ border-radius:8px;
+ padding:9px;
+ cursor:pointer;
+}
+@media(max-width:900px){
+ .kpi-grid,.client-list{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+ .kpi-grid,.client-list{grid-template-columns:1fr}
+}
+
+
+#authGate{
+ position:fixed;inset:0;z-index:9999;background:#f6f4eb;
+ display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-card{
+ width:min(520px,100%);background:#fff;border:1px solid #dbe2da;
+ border-radius:16px;padding:28px;box-shadow:0 18px 55px #0002;
+}
+.auth-card h2{margin-top:0;color:#1f5133}
+.auth-card .auth-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.auth-user{display:flex;align-items:center;gap:9px}
+.auth-user img{width:30px;height:30px;border-radius:50%}
+.role-admin{color:#1f5133;font-weight:800}
+.role-operator{color:#708238;font-weight:800}
+.role-reader{color:#657068;font-weight:800}
+.role-pending{color:#a93636;font-weight:800}
+
+.role-label{
+ display:inline-block;
+ margin-top:3px;
+ padding:2px 7px;
+ border-radius:999px;
+ background:#eef2e4;
+ font-size:11px;
+}
+.cloud-live{
+ color:#24633a;
+}
+.cloud-warn{
+ color:#8e332c;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="authGate">
+ <div class="auth-card">
+  <h2>🫒 Gestione Olio</h2>
+  <p id="authMessage">Accesso in corso…</p>
+  <div id="authUserBox"></div>
+  <div class="auth-actions">
+   <button id="googleLoginBtn" class="btn primary" onclick="window.signInGestioneOlio && window.signInGestioneOlio()">Accedi con Google</button>
+   <button id="googleLogoutBtn" class="btn" style="display:none" onclick="window.signOutGestioneOlio && window.signOutGestioneOlio()">Esci</button>
+  </div>
+  <p class="note" id="firebaseSetupNote"></p>
+ </div>
+</div>
+
+
+<header>
+ <div>
+  <h1>🫒 Gestione Olio</h1>
+  <small>Produzione, prenotazioni, vendite e disponibilità</small>
+ </div>
+ <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+   <span id="authHeader" class="auth-user"></span>
+   <button id="headerLogout" class="btn" style="display:none" onclick="window.signOutGestioneOlio && window.signOutGestioneOlio()">Esci</button>
+   <span id="driveStatus" class="badge-sync">☁️ Firebase</span>
+   <button class="btn" onclick="syncNow()">Sincronizza ora</button>
+   <button class="btn" onclick="backup()">Esporta backup</button>
+  </div>
+</header>
+
+<div class="app">
+
+<nav>
+ <button class="active" data-v="dash">Riepilogo</button>
+ <button data-v="prod">Produzione</button>
+ <button data-v="res">Prenotazioni</button>
+ <button data-v="sales">Vendite</button>
+ <button data-v="settings">Impostazioni</button>
+</nav>
+
+<main>
+
+<section id="dash" class="view active">
+ <div class="title">
+  <div>
+   <h2>Riepilogo annuale</h2>
+   <p>Vista consolidata dell’attività</p>
+  </div>
+
+  <div class="actions">
+   <select id="yf" class="btn" onchange="render()"></select>
+   <button class="btn" onclick="printReport()">Stampa report</button>
+  </div>
+ </div>
+
+ <div id="story" class="story"></div>
+ <div id="cards" class="cards"></div>
+
+ <div class="panel">
+  <h3>Indicatori economici</h3>
+  <div class="pad">
+   <div id="financialKpis" class="kpi-grid"></div>
+  </div>
+ </div>
+
+ <div class="panel">
+  <h3>Andamento per anno</h3>
+
+  <div class="table">
+   <table>
+    <thead>
+     <tr>
+      <th>Anno</th>
+      <th class="num">Olive kg</th>
+      <th class="num">Olio L</th>
+      <th class="num">Resa</th>
+      <th class="num">Costi</th>
+      <th class="num">Venduto L</th>
+      <th class="num">Ricavi</th>
+      <th class="num">Netto</th>
+      <th class="num">Prenotato L</th>
+      <th class="num">Giacenza L</th>
+     </tr>
+    </thead>
+    <tbody id="annual"></tbody>
+   </table>
+  </div>
+ </div>
+</section>
+
+<section id="prod" class="view">
+ <div class="title">
+  <div>
+   <h2>Produzione</h2>
+   <p>Raccolte e lotti di molitura</p>
+  </div>
+
+  <div class="actions">
+   <button class="btn" onclick="printReport()">Stampa report</button>
+   <button class="btn primary" onclick="openForm('production')">
+    + Nuova registrazione
+   </button>
+  </div>
+ </div>
+
+
+
+ <div class="filters">
+  <input id="salesSearch" placeholder="Cerca cliente" oninput="renderTables()">
+  <select id="salesPaid" onchange="renderTables()">
+   <option value="">Tutte</option>
+   <option value="unpaid">Da incassare</option>
+   <option value="paid">Pagate</option>
+  </select>
+ </div>
+ <div class="filters">
+  <input id="prodSearch" placeholder="Cerca appezzamento o lotto" oninput="renderTables()">
+  <select id="prodYear" onchange="renderTables()"><option value="">Tutti gli anni</option></select>
+ </div>
+ <div class="panel">
+  <div class="table">
+   <table>
+    <thead>
+     <tr>
+      <th>Raccolta</th>
+      <th>Anno</th>
+      <th>Appezzamento</th>
+      <th class="num">Olive kg</th>
+      <th>Lotto</th>
+      <th>Molitura</th>
+      <th class="num">Kg lotto</th>
+      <th class="num">Olio L</th>
+      <th class="num">Resa</th>
+      <th class="num">Costo</th>
+      <th>Azioni</th>
+     </tr>
+    </thead>
+    <tbody id="pr"></tbody>
+   </table>
+  </div>
+ </div>
+</section>
+
+<section id="res" class="view">
+ <div class="title">
+  <div>
+   <h2>Prenotazioni</h2>
+   <p>Ordini e consegne clienti</p>
+  </div>
+
+  <div class="actions">
+   <button class="btn" onclick="printReport()">Stampa report</button>
+   <button class="btn primary" onclick="openForm('reservations')">
+    + Nuova prenotazione
+   </button>
+  </div>
+ </div>
+
+ <div class="filters">
+  <input id="resSearch" placeholder="Cerca cliente" oninput="renderTables()">
+  <select id="resStatus" onchange="renderTables()">
+   <option value="">Tutte</option>
+   <option value="open">Da consegnare</option>
+   <option value="done">Consegnate</option>
+  </select>
+ </div>
+ <div class="panel">
+  <div class="table">
+   <table>
+    <thead>
+     <tr>
+      <th>Data</th>
+      <th>Anno</th>
+      <th>Cliente</th>
+      <th class="num">Quantità L</th>
+      <th class="num">Prezzo/L</th>
+      <th class="num">Totale</th>
+      <th>Consegnata</th>
+      <th>Note</th>
+      <th>Azioni</th>
+     </tr>
+    </thead>
+    <tbody id="rr"></tbody>
+   </table>
+  </div>
+ </div>
+</section>
+
+<section id="sales" class="view">
+ <div class="title">
+  <div>
+   <h2>Vendite</h2>
+   <p>Consegne e stato degli incassi</p>
+  </div>
+
+  <div class="actions">
+   <button class="btn" onclick="printReport()">Stampa report</button>
+   <button class="btn primary" onclick="openForm('sales')">
+    + Vendita diretta
+   </button>
+  </div>
+ </div>
+
+ <div class="filters">
+  <input id="salesSearch" placeholder="Cerca cliente" oninput="renderTables()">
+  <select id="salesPaid" onchange="renderTables()">
+   <option value="">Tutte</option>
+   <option value="paid">Pagate</option>
+   <option value="unpaid">Da incassare</option>
+  </select>
+ </div>
+ <div class="panel">
+  <div class="table">
+   <table>
+    <thead>
+     <tr>
+      <th>Data</th>
+      <th>Anno</th>
+      <th>Cliente</th>
+      <th class="num">Quantità L</th>
+      <th class="num">Prezzo/L</th>
+      <th class="num">Totale</th>
+      <th>Pagato</th>
+      <th>Note</th>
+      <th>Azioni</th>
+     </tr>
+    </thead>
+    <tbody id="sr"></tbody>
+   </table>
+  </div>
+ </div>
+</section>
+
+<section id="settings" class="view">
+ <div class="title">
+  <div>
+   <h2>Impostazioni</h2>
+   <p>Dati e accessi</p>
+  </div>
+ </div>
+
+ <div class="setup">
+
+  <div class="panel">
+   <h3>Backup e sincronizzazione</h3>
+   <div class="pad">
+    <p class="note">
+     Firebase/Cloud Firestore è il database condiviso principale.
+     Il backup JSON e Google Drive restano disponibili come copie di sicurezza opzionali.
+    </p>
+    <button class="btn primary" onclick="connectGoogle()">Backup su Google Drive (opzionale)</button>
+    <button class="btn" onclick="syncNow()">Sincronizza ora</button>
+    <button class="btn" onclick="refreshFromDrive()">↻ Verifica Drive</button>
+
+    <div id="syncInfo" class="note" style="margin-top:10px"></div>
+
+    <div style="margin-top:12px">
+     <button class="btn" onclick="backup()">Esporta JSON</button>
+
+     <label class="btn">
+      Importa
+      <input
+       hidden
+       type="file"
+       accept="application/json"
+       onchange="restore(this.files[0])">
+     </label>
+    </div>
+
+    <p id="driveSettingsStatus" class="note" style="margin-top:12px"></p>
+   </div>
+  </div>
+
+
+
+  <div class="panel" id="migrationPanel" style="display:none">
+   <h3>Migrazione dati</h3>
+   <div class="pad">
+    <p class="note">
+     Importa nel database Firebase un backup JSON della vecchia Gestione Olio.
+     L'operazione è riservata all'amministratore e aggiunge/aggiorna i dati senza cancellare quelli già presenti.
+    </p>
+    <label class="btn">
+     Importa backup nel cloud
+     <input hidden type="file" accept="application/json" onchange="importBackupToFirebase(this.files[0])">
+    </label>
+   </div>
+  </div>
+
+  <div class="panel" id="usersPanel" style="display:none">
+
+   <h3>Utenti e autorizzazioni</h3>
+   <div class="pad">
+    <p class="note">L'amministratore assegna il ruolo agli account Google che hanno effettuato almeno un accesso.</p>
+    <div id="usersList"></div>
+   </div>
+  </div>
+
+  <div class="panel">
+   <h3>Clienti</h3>
+   <div class="pad">
+    <p class="note">I clienti vengono ricavati automaticamente da prenotazioni e vendite.</p>
+    <div id="clientList" class="client-list"></div>
+   </div>
+  </div>
+
+  <div class="panel">
+   <h3>Utenti autorizzati</h3>
+   <div class="pad">
+    <b>Ruoli previsti</b>
+    <p>
+     Amministratore: utenti, modifica e cancellazione.<br>
+     Operatore: inserimento e modifica.
+    </p>
+    <p class="note">
+     L'accesso avviene con Google. I dati condivisi sono in Cloud Firestore.
+    </p>
+   </div>
+  </div>
+
+  <div class="panel">
+   <h3>Archivio locale</h3>
+   <div class="pad">
+    <p class="note">
+     I dati vengono mantenuti localmente come copia di sicurezza.
+     Il database condiviso principale è Firebase/Cloud Firestore.
+    </p>
+    <button class="btn danger" onclick="resetAll()">
+     Cancella tutti i dati
+    </button>
+   </div>
+  </div>
+
+ </div>
+</section>
+
+</main>
+</div>
+
+<dialog id="modal">
+ <form id="form" onsubmit="save(event)">
+  <div class="mh">
+   <h3 id="mt"></h3>
+   <button
+    type="button"
+    class="icon"
+    style="color:#fff"
+    onclick="modal.close()">×</button>
+  </div>
+
+  <div class="mb">
+   <div id="fields" class="grid"></div>
+
+   <div class="ma">
+    <button type="button" class="btn" onclick="modal.close()">
+     Annulla
+    </button>
+    <button class="btn primary">Salva</button>
+   </div>
+  </div>
+ </form>
+</dialog>
+
+<script>
+const K='gestioneOlio.v2';
+
+let db=load();
+let section='';
+let editing='';
+
+const euro=new Intl.NumberFormat('it-IT',{
+ style:'currency',
+ currency:'EUR'
+});
+
+const num=new Intl.NumberFormat('it-IT',{
+ maximumFractionDigits:2
+});
+
+function load(){
+ try{
+  return Object.assign(
+   {
+    production:[],
+    reservations:[],
+    sales:[]
+   },
+   JSON.parse(localStorage.getItem(K)||'{}')
+  );
+ }catch{
+  return {
+   production:[],
+   reservations:[],
+   sales:[]
+  };
+ }
+}
+
+/*
+ * GOOGLE DRIVE
+ * ------------------------------------------------------------
+ * 1) Crea un OAuth Client ID di tipo "Web application" in Google Cloud.
+ * 2) Inserisci il Client ID qui sotto.
+ * 3) Aggiungi l'origine esatta da cui servi questo file, ad esempio:
+ *    http://localhost:8000
+ *    oppure https://tuodominio.it
+ *
+ * L'app usa drive.appdata: il file dati è accessibile solo all'app
+ * e non viene mostrato normalmente nell'elenco dei file di Drive.
+ */
+const GOOGLE_CLIENT_ID = '583041191578-402k6rju6e31cce00mon38cshkd68j2q.apps.googleusercontent.com';
+const DRIVE_FILE_NAME = 'gestione-olio-v2.json';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+
+let googleToken = null;
+let googleTokenClient = null;
+let driveFileId = null;
+let driveReady = false;
+let driveSyncTimer = null;
+
+function setDriveStatus(text){
+ const el=document.getElementById('driveStatus');
+ const st=document.getElementById('driveSettingsStatus');
+ if(el) el.textContent=text;
+ if(st) st.textContent=text;
+}
+
+function persist(){
+ localStorage.setItem(K,JSON.stringify(db));
+ render();
+ renderClients();
+ renderHistory();
+
+ if(typeof window.getCurrentRole==="function"){
+  const role=window.getCurrentRole();
+  if(role==="reader"||role==="pending"){
+   alert("Il tuo account non ha i permessi per modificare i dati.");
+   return;
+  }
+ }
+
+ window.dispatchEvent(new CustomEvent("gestioneOlioSaved",{
+  detail:{entity:section||"unknown",id:editing||""}
+ }));
+
+ if(googleToken && driveReady){
+  clearTimeout(driveSyncTimer);
+  driveSyncTimer=setTimeout(()=>syncToDrive(),500);
+ }
+}
+
+function connectGoogle(){
+ if(!window.google || !google.accounts || !google.accounts.oauth2){
+  alert('Google Identity Services non è ancora disponibile. Attendi qualche secondo e riprova.');
+  return;
+ }
+
+ if(GOOGLE_CLIENT_ID.startsWith('INSERISCI_')){
+  alert('Prima inserisci il Google OAuth Client ID nella costante GOOGLE_CLIENT_ID del file HTML.');
+  return;
+ }
+
+ if(!googleTokenClient){
+  googleTokenClient=google.accounts.oauth2.initTokenClient({
+   client_id:GOOGLE_CLIENT_ID,
+   scope:DRIVE_SCOPE,
+   callback:async (response)=>{
+    if(response.error){
+     console.error(response);
+     setDriveStatus('☁️ Errore collegamento Google');
+     alert('Impossibile collegare Google Drive.');
+     return;
+    }
+
+    googleToken=response.access_token;
+    driveReady=true;
+    setDriveStatus('☁️ Google Drive collegato');
+    await loadFromDrive();
+   }
+  });
+ }
+
+ googleTokenClient.requestAccessToken({
+  prompt: googleToken ? '' : 'consent'
+ });
+}
+
+async function driveFetch(url, options={}){
+ if(!googleToken) throw new Error('Google Drive non collegato');
+
+ const headers=Object.assign({},options.headers||{},{
+  Authorization:'Bearer '+googleToken
+ });
+
+ const response=await fetch(url,Object.assign({},options,{headers}));
+
+ if(response.status===401){
+  googleToken=null;
+  driveReady=false;
+  setDriveStatus('☁️ Sessione Google scaduta — ricollega Drive');
+  throw new Error('Sessione Google scaduta');
+ }
+
+ if(!response.ok){
+  const text=await response.text();
+  throw new Error(text||('HTTP '+response.status));
+ }
+
+ return response;
+}
+
+async function findDriveFile(){
+ const q=
+  "name='"+DRIVE_FILE_NAME.replace(/'/g,"\\'")+
+  "' and trashed=false";
+
+ const url=
+  'https://www.googleapis.com/drive/v3/files'+
+  '?spaces=appDataFolder'+
+  '&q='+encodeURIComponent(q)+
+  '&fields=files(id,name,modifiedTime)';
+
+ const response=await driveFetch(url);
+ const data=await response.json();
+
+ return data.files && data.files.length
+  ?data.files[0]
+  :null;
+}
+
+async function createDriveFile(){
+ const metadata={
+  name:DRIVE_FILE_NAME,
+  parents:['appDataFolder'],
+  mimeType:'application/json'
+ };
+
+ const boundary='-------gestioneolio'+Date.now();
+ const body=
+  '--'+boundary+'\r\n'+
+  'Content-Type: application/json; charset=UTF-8\r\n\r\n'+
+  JSON.stringify(metadata)+'\r\n'+
+  '--'+boundary+'\r\n'+
+  'Content-Type: application/json\r\n\r\n'+
+  JSON.stringify(db)+'\r\n'+
+  '--'+boundary+'--';
+
+ const response=await driveFetch(
+  'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime',
+  {
+   method:'POST',
+   headers:{
+    'Content-Type':'multipart/related; boundary='+boundary
+   },
+   body
+  }
+ );
+
+ return response.json();
+}
+
+async function updateDriveFile(){
+ if(!driveFileId) return;
+
+ const response=await driveFetch(
+  'https://www.googleapis.com/upload/drive/v3/files/'+
+  encodeURIComponent(driveFileId)+
+  '?uploadType=media',
+  {
+   method:'PATCH',
+   headers:{
+    'Content-Type':'application/json'
+   },
+   body:JSON.stringify(db)
+  }
+ );
+
+ return response.json();
+}
+
+async function saveSafetyCopy(){
+ try{
+  const history=JSON.parse(localStorage.getItem(K+'.history')||'[]');
+
+  history.unshift({
+   savedAt:new Date().toISOString(),
+   data:JSON.parse(JSON.stringify(db))
+  });
+
+  // Keep the last 10 local snapshots.
+  localStorage.setItem(
+   K+'.history',
+   JSON.stringify(history.slice(0,10))
+  );
+
+  renderHistory();
+ }catch(error){
+  console.warn('Storico sicurezza non disponibile',error);
+ }
+}
+
+function getSafetyHistory(){
+ try{
+  return JSON.parse(localStorage.getItem(K+'.history')||'[]');
+ }catch{
+  return [];
+ }
+}
+
+function downloadSafetyCopy(index=0){
+ const history=getSafetyHistory();
+
+ if(!history.length){
+  alert('Non ci sono copie di sicurezza locali.');
+  return;
+ }
+
+ const item=history[index]||history[0];
+ const stamp=new Date(item.savedAt).toISOString().slice(0,19).replace(/[:T]/g,'-');
+
+ const file=new Blob(
+  [JSON.stringify(item.data,null,2)],
+  {type:'application/json'}
+ );
+
+ const link=document.createElement('a');
+ link.href=URL.createObjectURL(file);
+ link.download='gestione-olio-sicurezza-'+stamp+'.json';
+ link.click();
+ setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+}
+
+function restoreSafetyCopy(index){
+ const history=getSafetyHistory();
+ const item=history[index];
+
+ if(!item)return;
+
+ if(confirm(
+  'Ripristinare questa copia di sicurezza?\\n\\n'+
+  'Prima del ripristino verrà salvata una nuova copia dello stato attuale.'
+ )){
+  saveSafetyCopy().then(()=>{
+   db=Object.assign({
+    production:[],
+    reservations:[],
+    sales:[]
+   },item.data);
+
+   localStorage.setItem(K,JSON.stringify(db));
+   render();
+   alert('Copia ripristinata. Se Google Drive è collegato, usa "Sincronizza ora" per aggiornare anche il cloud.');
+  });
+ }
+}
+
+function clearSafetyHistory(){
+ if(confirm('Cancellare tutte le copie di sicurezza locali?')){
+  localStorage.removeItem(K+'.history');
+  renderHistory();
+ }
+}
+
+function renderHistory(){
+ const el=document.getElementById('historyList');
+ if(!el)return;
+
+ const history=getSafetyHistory();
+
+ if(!history.length){
+  el.innerHTML='<div class="empty">Nessuna copia di sicurezza disponibile</div>';
+  return;
+ }
+
+ el.innerHTML=history.map((item,index)=>{
+  const data=item.data||{};
+  const count=(data.production?.length||0)+
+              (data.reservations?.length||0)+
+              (data.sales?.length||0);
+
+  return `
+   <div class="history-row">
+    <div>
+     <b>${new Date(item.savedAt).toLocaleString('it-IT')}</b>
+     <div class="history-meta">${count} registrazioni</div>
+    </div>
+    <div class="actions">
+     <button class="btn" onclick="restoreSafetyCopy(${index})">Ripristina</button>
+     <button class="btn" onclick="downloadSafetyCopy(${index})">Esporta</button>
+    </div>
+   </div>
+  `;
+ }).join('');
+}
+
+function updateSyncInfo(message){
+ const el=document.getElementById('syncInfo');
+ if(el) el.textContent=message;
+}
+
+async function syncToDrive(){
+ if(!googleToken || !driveReady) return;
+
+ try{
+  setDriveStatus('☁️ Salvataggio su Google Drive…');
+  await saveSafetyCopy();
+
+  if(!driveFileId){
+   const existing=await findDriveFile();
+   if(existing) driveFileId=existing.id;
+  }
+
+  if(driveFileId){
+   await updateDriveFile();
+  }else{
+   const created=await createDriveFile();
+   driveFileId=created.id;
+  }
+
+  const now=new Date();
+  localStorage.setItem(
+   K+'.sync',
+   JSON.stringify({
+    lastSync:now.toISOString(),
+    fileId:driveFileId
+   })
+  );
+
+  setDriveStatus('☁️ Salvato su Google Drive · '+now.toLocaleTimeString('it-IT'));
+  updateSyncInfo('Ultima sincronizzazione: '+now.toLocaleString('it-IT'));
+ }catch(error){
+  console.error(error);
+  setDriveStatus('⚠️ Salvataggio Drive non riuscito — dati locali conservati');
+  updateSyncInfo('Attenzione: sincronizzazione non riuscita. I dati locali sono al sicuro.');
+ }
+}
+
+async function refreshFromDrive(){
+ if(!googleToken){
+  connectGoogle();
+  return;
+ }
+
+ try{
+  setDriveStatus('☁️ Verifica archivio Drive…');
+  await loadFromDrive(true);
+ }catch(error){
+  console.error(error);
+  setDriveStatus('⚠️ Verifica Drive non riuscita');
+ }
+}
+
+async function loadFromDrive(forceRemote=false){
+ try{
+  setDriveStatus('☁️ Controllo archivio Google Drive…');
+
+  const existing=await findDriveFile();
+
+  if(!existing){
+   const answer=confirm(
+    'Non esiste ancora un archivio Gestione Olio su Google Drive.\n\n'+
+    'Vuoi creare quello attuale del browser?'
+   );
+
+   if(answer){
+    const created=await createDriveFile();
+    driveFileId=created.id;
+    const now=new Date();
+    localStorage.setItem(
+     K+'.sync',
+     JSON.stringify({lastSync:now.toISOString(),fileId:driveFileId})
+    );
+    setDriveStatus('☁️ Archivio creato su Google Drive');
+    updateSyncInfo('Ultima sincronizzazione: '+now.toLocaleString('it-IT'));
+   }else{
+    setDriveStatus('☁️ Google Drive collegato · non sincronizzato');
+   }
+   return;
+  }
+
+  driveFileId=existing.id;
+
+  const response=await driveFetch(
+   'https://www.googleapis.com/drive/v3/files/'+
+   encodeURIComponent(driveFileId)+
+   '?alt=media'
+  );
+
+  const remote=await response.json();
+
+  if(!remote.production || !remote.reservations || !remote.sales){
+   throw new Error('Archivio Google Drive non valido');
+  }
+
+  const localString=localStorage.getItem(K);
+  const localHasData=
+   localString &&
+   (db.production.length||db.reservations.length||db.sales.length);
+
+  const lastSyncInfo=JSON.parse(localStorage.getItem(K+'.sync')||'null');
+  const remoteTime=existing.modifiedTime
+    ?new Date(existing.modifiedTime).getTime()
+    :0;
+  const lastLocalSync=lastSyncInfo&&lastSyncInfo.lastSync
+    ?new Date(lastSyncInfo.lastSync).getTime()
+    :0;
+
+  if(forceRemote){
+   const answer=confirm(
+    'Vuoi sostituire i dati presenti nel browser con quelli di Google Drive?\n\n'+
+    'Questa operazione non modifica il file su Drive.'
+   );
+
+   if(!answer){
+    setDriveStatus('☁️ Verifica annullata');
+    return;
+   }
+  }else if(localHasData && remoteTime && lastLocalSync && remoteTime>lastLocalSync){
+   const answer=confirm(
+    'Google Drive contiene una versione più recente dei dati.\n\n'+
+    'OK = usa la versione di Google Drive\n'+
+    'Annulla = mantieni i dati locali e li sincronizzi su Drive'
+   );
+
+   if(!answer){
+    await syncToDrive();
+    return;
+   }
+  }else if(localHasData){
+   const answer=confirm(
+    'Sono presenti dati sia nel browser sia su Google Drive.\n\n'+
+    'OK = usa i dati di Google Drive\n'+
+    'Annulla = mantiene i dati locali e li salva su Drive'
+   );
+
+   if(!answer){
+    await syncToDrive();
+    return;
+   }
+  }
+
+  await saveSafetyCopy();
+
+  db=Object.assign({
+   production:[],
+   reservations:[],
+   sales:[]
+  },remote);
+
+  localStorage.setItem(K,JSON.stringify(db));
+
+  const now=new Date();
+  localStorage.setItem(
+   K+'.sync',
+   JSON.stringify({
+    lastSync:now.toISOString(),
+    fileId:driveFileId
+   })
+  );
+
+  render();
+
+  setDriveStatus(
+   '☁️ Sincronizzato da Google Drive · '+
+   (existing.modifiedTime
+    ?new Date(existing.modifiedTime).toLocaleString('it-IT')
+    :'ora')
+  );
+  updateSyncInfo('Ultima sincronizzazione: '+now.toLocaleString('it-IT'));
+ }catch(error){
+  console.error(error);
+  setDriveStatus('⚠️ Lettura Drive non riuscita — uso i dati locali');
+  updateSyncInfo('Attenzione: impossibile leggere Google Drive. I dati locali sono stati mantenuti.');
+ }
+}
+
+async function syncNow(){
+ if(window.firebaseSyncNow){
+  await window.firebaseSyncNow();
+  return;
+ }
+ alert("Firebase non è ancora disponibile. Ricarica la pagina e riprova.");
+}
+
+function uid(){
+ return crypto.randomUUID
+  ?crypto.randomUUID()
+  :Date.now()+'-'+Math.random();
+}
+
+function n(v){
+ return Number(v)||0;
+}
+
+function y(d){
+ return d
+  ?Number(d.slice(0,4))
+  :new Date().getFullYear();
+}
+
+function fd(v){
+ if(!v)return '';
+
+ const [a,b,c]=v.split('-');
+ return `${c}/${b}/${a}`;
+}
+
+function esc(v=''){
+ return String(v).replace(
+  /[&<>"']/g,
+  c=>({
+   '&':'&amp;',
+   '<':'&lt;',
+   '>':'&gt;',
+   '"':'&quot;',
+   "'":'&#39;'
+  }[c])
+ );
+}
+
+function sold(){
+ const reservations=db.reservations
+  .filter(x=>x.delivered)
+  .map(x=>({
+   ...x,
+   id:'r-'+x.id,
+   linked:true,
+   notes:'Da prenotazione'
+  }));
+
+ return [
+  ...reservations,
+  ...db.sales
+ ];
+}
+
+function sum(yr){
+ const p=db.production.filter(x=>y(x.harvestDate)==yr);
+
+ const r=db.reservations.filter(
+  x=>y(x.date)==yr&&!x.delivered
+ );
+
+ const s=sold().filter(x=>y(x.date)==yr);
+
+ const olives=p.reduce(
+  (total,x)=>total+n(x.olives),0
+ );
+
+ const oil=p.reduce(
+  (total,x)=>total+n(x.oil),0
+ );
+
+ const cost=p.reduce(
+  (total,x)=>total+n(x.cost),0
+ );
+
+ const soldLitres=s.reduce(
+  (total,x)=>total+n(x.qty),0
+ );
+
+ const revenue=s.reduce(
+  (total,x)=>total+n(x.qty)*n(x.price),0
+ );
+
+ const reserved=r.reduce(
+  (total,x)=>total+n(x.qty),0
+ );
+
+ const due=s
+  .filter(x=>!x.paid)
+  .reduce(
+   (total,x)=>total+n(x.qty)*n(x.price),0
+  );
+
+ return {
+  yr,
+  ol:olives,
+  oil,
+  yield:olives?oil/olives*100:0,
+  cost,
+  sl:soldLitres,
+  rev:revenue,
+  net:revenue-cost,
+  rs:reserved,
+  stock:oil-soldLitres-reserved,
+  due
+ };
+}
+
+function years(){
+ const values=[
+  new Date().getFullYear(),
+  ...db.production.map(x=>y(x.harvestDate)),
+  ...db.reservations.map(x=>y(x.date)),
+  ...sold().map(x=>y(x.date))
+ ];
+
+ return [...new Set(values)].sort();
+}
+
+document.querySelectorAll('nav button').forEach(button=>{
+ button.onclick=()=>{
+  document
+   .querySelectorAll('nav button,.view')
+   .forEach(element=>element.classList.remove('active'));
+
+  button.classList.add('active');
+
+  document
+   .getElementById(button.dataset.v)
+   .classList.add('active');
+ };
+});
+
+function render(){
+ const availableYears=years();
+ const previousYear=Number(yf.value)||new Date().getFullYear();
+
+ yf.innerHTML=availableYears.map(value=>
+  `<option ${value==previousYear?'selected':''}>
+   ${value}
+  </option>`
+ ).join('');
+
+ const current=sum(Number(yf.value));
+
+ cards.innerHTML=[
+  ['Olio prodotto',num.format(current.oil)+' L'],
+  ['Venduto',num.format(current.sl)+' L'],
+  ['Prenotato',num.format(current.rs)+' L'],
+  ['Giacenza',num.format(current.stock)+' L'],
+  ['Da riscuotere',euro.format(current.due)]
+ ].map(item=>`
+  <div class="card">
+   <span>${item[0]}</span>
+   <b>${item[1]}</b>
+  </div>
+ `).join('');
+
+ financialKpis.innerHTML=[
+  ['Costi',euro.format(current.cost)],
+  ['Ricavi',euro.format(current.rev)],
+  ['Netto',euro.format(current.net)],
+  ['Incassi da riscuotere',euro.format(current.due)]
+ ].map(item=>`
+  <div class="kpi-box">
+   <span>${item[0]}</span>
+   <b>${item[1]}</b>
+  </div>
+ `).join('');
+
+ story.innerHTML=current.oil
+  ?`Nel <b>${current.yr}</b> sono stati prodotti
+    <b>${num.format(current.oil)} L</b>
+    con resa ${num.format(current.yield)}%.
+    Giacenza disponibile:
+    <b>${num.format(current.stock)} L</b>.
+    Ricavo netto:
+    <b>${euro.format(current.net)}</b>.`
+  :`Nessuna produzione registrata nel
+    <b>${current.yr}</b>.`;
+
+ annual.innerHTML=availableYears.map(value=>{
+  const item=sum(value);
+
+  return `
+   <tr>
+    <td>${value}</td>
+    <td class="num">${num.format(item.ol)}</td>
+    <td class="num">${num.format(item.oil)}</td>
+    <td class="num">${num.format(item.yield)}%</td>
+    <td class="num">${euro.format(item.cost)}</td>
+    <td class="num">${num.format(item.sl)}</td>
+    <td class="num">${euro.format(item.rev)}</td>
+    <td class="num">${euro.format(item.net)}</td>
+    <td class="num">${num.format(item.rs)}</td>
+    <td class="num">${num.format(item.stock)}</td>
+   </tr>
+  `;
+ }).join('');
+
+ renderTables();
+ renderClients();
+ renderHistory();
+}
+
+function empty(columns){
+ return `
+  <tr>
+   <td colspan="${columns}" class="empty">
+    Nessun dato registrato
+   </td>
+  </tr>
+ `;
+}
+
+function actions(sectionName,itemId,edit=true){
+ const role=typeof window.getCurrentRole==="function"
+  ?window.getCurrentRole()
+  :"pending";
+
+ const canEdit=role==="admin"||role==="operator";
+ const canDelete=role==="admin";
+
+ const editButton=edit&&canEdit
+  ?`<button class="icon edit" title="Modifica"
+      onclick="openForm('${sectionName}','${itemId}')">✎</button>`
+  :'';
+
+ const deleteButton=canDelete
+  ?`<button class="icon delete" title="Elimina"
+      onclick="removeItem('${sectionName}','${itemId}')">×</button>`
+  :'';
+
+ return editButton+deleteButton;
+}
+
+function populateFilterYears(){
+ const yearsList=years();
+ const select=document.getElementById('prodYear');
+ if(select){
+  const current=select.value;
+  select.innerHTML='<option value="">Tutti gli anni</option>'+
+   yearsList.map(v=>`<option value="${v}">${v}</option>`).join('');
+  select.value=current;
+ }
+}
+
+function renderClients(){
+ const el=document.getElementById('clientList');
+ if(!el)return;
+
+ const clients=[...new Set([
+  ...db.reservations.map(x=>(x.client||'').trim()),
+  ...db.sales.map(x=>(x.client||'').trim())
+ ].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'it'));
+
+ el.innerHTML=clients.length
+  ?clients.map(client=>`
+    <button class="client-chip" onclick="useClient('${esc(client).replace(/'/g,"&#39;")}')">
+     ${esc(client)}
+    </button>
+   `).join('')
+  :'<div class="empty">Nessun cliente registrato</div>';
+}
+
+function useClient(client){
+ const input=document.getElementById('resSearch');
+ if(input){
+  input.value=client;
+  document.querySelector('[data-v="res"]').click();
+  renderTables();
+  return;
+ }
+}
+
+function renderTables(){
+ populateFilterYears();
+
+ const prodSearch=(document.getElementById('prodSearch')?.value||'').toLowerCase();
+ const prodYear=document.getElementById('prodYear')?.value||'';
+
+ const resSearch=(document.getElementById('resSearch')?.value||'').toLowerCase();
+ const resStatus=document.getElementById('resStatus')?.value||'';
+
+ const salesSearch=(document.getElementById('salesSearch')?.value||'').toLowerCase();
+ const salesPaid=document.getElementById('salesPaid')?.value||'';
+
+ const filteredProduction=db.production.filter(item=>{
+  const text=((item.plot||'')+' '+(item.lot||'')).toLowerCase();
+  return (!prodSearch||text.includes(prodSearch)) &&
+         (!prodYear||String(y(item.harvestDate))===prodYear);
+ });
+
+ pr.innerHTML=filteredProduction.map(item=>{
+  const lotKg=db.production
+   .filter(row=>row.lot&&row.lot==item.lot)
+   .reduce(
+    (total,row)=>total+n(row.olives),0
+   );
+
+  const yieldValue=lotKg&&item.oil
+   ?n(item.oil)/lotKg*100
+   :0;
+
+  return `
+   <tr>
+    <td>${fd(item.harvestDate)}</td>
+    <td>${y(item.harvestDate)}</td>
+    <td>${esc(item.plot)}</td>
+    <td class="num">${num.format(item.olives)}</td>
+    <td>${esc(item.lot)}</td>
+    <td>${fd(item.millDate)}</td>
+    <td class="num">${item.oil?num.format(lotKg):''}</td>
+    <td class="num">${item.oil?num.format(item.oil):''}</td>
+    <td class="num">
+     ${item.oil?num.format(yieldValue)+'%':''}
+    </td>
+    <td class="num">
+     ${item.cost?euro.format(item.cost):''}
+    </td>
+    <td>${actions('production',item.id)}</td>
+   </tr>
+  `;
+ }).join('')||empty(11);
+
+ const filteredReservations=db.reservations.filter(item=>{
+  const client=(item.client||'').toLowerCase();
+  return (!resSearch||client.includes(resSearch)) &&
+   (!resStatus||
+    (resStatus==='done'&&item.delivered)||
+    (resStatus==='open'&&!item.delivered));
+ });
+
+ rr.innerHTML=filteredReservations.map(item=>`
+  <tr>
+   <td>${fd(item.date)}</td>
+   <td>${y(item.date)}</td>
+   <td>${esc(item.client)}</td>
+   <td class="num">${num.format(item.qty)}</td>
+   <td class="num">${euro.format(item.price)}</td>
+   <td class="num">
+    ${euro.format(n(item.qty)*n(item.price))}
+   </td>
+   <td>
+    <button
+     class="pill ${item.delivered?'yes':'no'}"
+     onclick="toggle('${item.id}','delivered')">
+     ${item.delivered?'SI':'NO'}
+    </button>
+   </td>
+   <td>${esc(item.notes)}</td>
+   <td>${actions('reservations',item.id)}</td>
+  </tr>
+ `).join('')||empty(9);
+
+ const filteredSales=sold().filter(item=>{
+  const client=(item.client||'').toLowerCase();
+  return (!salesSearch||client.includes(salesSearch)) &&
+   (!salesPaid||
+    (salesPaid==='paid'&&item.paid)||
+    (salesPaid==='unpaid'&&!item.paid));
+ });
+
+ sr.innerHTML=filteredSales.map(item=>`
+  <tr>
+   <td>${fd(item.date)}</td>
+   <td>${y(item.date)}</td>
+   <td>${esc(item.client)}</td>
+   <td class="num">${num.format(item.qty)}</td>
+   <td class="num">${euro.format(item.price)}</td>
+   <td class="num">
+    ${euro.format(n(item.qty)*n(item.price))}
+   </td>
+   <td>
+    <button
+     class="pill ${item.paid?'yes':'no'}"
+     onclick="togglePaid('${item.id}',${Boolean(item.linked)})">
+     ${item.paid?'SI':'NO'}
+    </button>
+   </td>
+   <td>${esc(item.notes)}</td>
+   <td>
+    ${item.linked?'':actions('sales',item.id,true)}
+   </td>
+  </tr>
+ `).join('')||empty(9);
+}
+
+const schema={
+ production:[
+  ['harvestDate','Data raccolta','date',1],
+  ['plot','Appezzamento','text',1],
+  ['olives','Olive raccolte (kg)','number',1],
+  ['lot','Lotto molitura','text',1],
+  ['millDate','Data molitura','date'],
+  ['oil','Olio prodotto (L)','number'],
+  ['cost','Costo molitura (€)','number'],
+  ['notes','Note','textarea']
+ ],
+
+ reservations:[
+  ['date','Data prenotazione','date',1],
+  ['client','Cliente','text',1],
+  ['qty','Quantità (L)','number',1],
+  ['price','Prezzo (€/L)','number',1],
+  ['delivered','Consegnata','select'],
+  ['notes','Note','textarea']
+ ],
+
+ sales:[
+  ['date','Data','date',1],
+  ['client','Cliente','text',1],
+  ['qty','Quantità (L)','number',1],
+  ['price','Prezzo (€/L)','number',1],
+  ['paid','Pagato','select'],
+  ['notes','Note','textarea']
+ ]
+};
+
+function openForm(sectionName,itemId=''){
+ if(typeof window.getCurrentRole==='function' && !['admin','operator'].includes(window.getCurrentRole())){
+  alert('Il tuo account è in sola lettura.');
+  return;
+ }
+ section=sectionName;
+ editing=itemId;
+
+ const item=itemId
+  ?db[sectionName].find(row=>row.id==itemId)
+  :null;
+
+ mt.textContent=item
+  ?'Modifica registrazione'
+  :sectionName=='production'
+  ?'Nuova produzione'
+  :sectionName=='reservations'
+  ?'Nuova prenotazione'
+  :'Nuova vendita';
+
+ fields.innerHTML=schema[sectionName].map(
+  ([key,label,type,required])=>`
+   <div class="field ${type=='textarea'?'full':''}">
+    <label>${label}</label>
+    ${
+     type=='select'
+      ?`<select name="${key}">
+         <option value="false">NO</option>
+         <option value="true">SI</option>
+        </select>`
+      :type=='textarea'
+      ?`<textarea name="${key}" rows="3"></textarea>`
+      :`<input
+         name="${key}"
+         type="${type}"
+         ${type=='number'?'step="0.01" min="0"':''}
+         ${required?'required':''}>`
+    }
+   </div>
+  `
+ ).join('');
+
+ if(item){
+  schema[sectionName].forEach(([key,,type])=>{
+   form.elements[key].value=type=='select'
+    ?String(Boolean(item[key]))
+    :item[key]??'';
+  });
+ }
+
+ modal.showModal();
+}
+
+async function save(event){
+ event.preventDefault();
+
+ const role=typeof window.getCurrentRole==="function"
+  ?window.getCurrentRole()
+  :"pending";
+
+ if(role!=="admin"&&role!=="operator"){
+  alert("Il tuo ruolo non consente di modificare i dati.");
+  return;
+ }
+
+ const item=Object.fromEntries(new FormData(event.target));
+
+ ['olives','oil','cost','qty','price'].forEach(key=>{
+  if(key in item)item[key]=n(item[key]);
+ });
+
+ ['delivered','paid'].forEach(key=>{
+  if(key in item)item[key]=item[key]=='true';
+ });
+
+ const wasEditing=Boolean(editing);
+ const id=editing||uid();
+ item.id=id;
+
+ const index=db[section].findIndex(row=>row.id==id);
+
+ if(index>=0){
+  db[section][index]=item;
+ }else{
+  db[section].push(item);
+ }
+
+ localStorage.setItem(K,JSON.stringify(db));
+ render();
+ renderClients();
+ renderHistory();
+
+ const action=wasEditing?"update":"create";
+ editing='';
+ modal.close();
+ event.target.reset();
+
+ try{
+  if(window.firebaseSaveItem){
+   await window.firebaseSaveItem(section,item);
+  }
+  if(window.firebaseAudit){
+   await window.firebaseAudit(action,section,id,{
+    client:item.client||"",
+    qty:item.qty??null
+   });
+  }
+  setDriveStatus("☁️ Firebase · salvato");
+ }catch(error){
+  console.error(error);
+  alert("Il dato è stato conservato localmente, ma il salvataggio cloud non è riuscito.");
+  if(window.firebaseReload) await window.firebaseReload();
+ }
+}
+
+async function removeItem(sectionName,itemId){
+ if(typeof window.getCurrentRole==="function" &&
+    window.getCurrentRole()!=="admin"){
+  alert("Solo l'amministratore può eliminare registrazioni.");
+  return;
+ }
+
+ if(!confirm('Eliminare questa registrazione?'))return;
+
+ const previous=db[sectionName]||[];
+ const deleted=previous.find(item=>item.id==itemId);
+
+ db[sectionName]=previous.filter(item=>item.id!=itemId);
+ localStorage.setItem(K,JSON.stringify(db));
+ render();
+ renderClients();
+ renderHistory();
+
+ try{
+  if(window.firebaseDeleteItem){
+   await window.firebaseDeleteItem(sectionName,itemId);
+  }
+  if(window.firebaseAudit){
+   await window.firebaseAudit("delete",sectionName,itemId,{
+    client:deleted?.client||"",
+    qty:deleted?.qty??null
+   });
+  }
+  setDriveStatus("☁️ Firebase · eliminato");
+ }catch(error){
+  console.error(error);
+  alert("La cancellazione cloud non è riuscita. I dati cloud verranno ricaricati.");
+  if(window.firebaseReload) await window.firebaseReload();
+ }
+}
+
+async function toggle(itemId,key){
+ if(typeof window.getCurrentRole==="function" &&
+    !["admin","operator"].includes(window.getCurrentRole())){
+  alert("Il tuo ruolo non consente di modificare lo stato.");
+  return;
+ }
+
+ const item=db.reservations.find(row=>row.id==itemId);
+ if(!item)return;
+
+ item[key]=!item[key];
+ localStorage.setItem(K,JSON.stringify(db));
+ render();
+ renderClients();
+ renderHistory();
+
+ try{
+  if(window.firebaseSaveItem) await window.firebaseSaveItem("reservations",item);
+  if(window.firebaseAudit){
+   await window.firebaseAudit("update","reservations",itemId,{field:key,value:item[key]});
+  }
+  setDriveStatus("☁️ Firebase · aggiornato");
+ }catch(error){
+  console.error(error);
+  alert("Aggiornamento non riuscito. I dati cloud verranno ricaricati.");
+  if(window.firebaseReload) await window.firebaseReload();
+ }
+}
+
+async function togglePaid(itemId,linked){
+ if(typeof window.getCurrentRole==="function" &&
+    !["admin","operator"].includes(window.getCurrentRole())){
+  alert("Il tuo ruolo non consente di modificare lo stato.");
+  return;
+ }
+
+ const item=linked
+  ?db.reservations.find(row=>'r-'+row.id==itemId)
+  :db.sales.find(row=>row.id==itemId);
+
+ if(!item)return;
+
+ item.paid=!item.paid;
+ localStorage.setItem(K,JSON.stringify(db));
+ render();
+ renderClients();
+ renderHistory();
+
+ try{
+  if(window.firebaseSaveItem){
+   await window.firebaseSaveItem(linked?"reservations":"sales",item);
+  }
+  if(window.firebaseAudit){
+   await window.firebaseAudit("update",linked?"reservations":"sales",itemId,{field:"paid",value:item.paid});
+  }
+  setDriveStatus("☁️ Firebase · aggiornato");
+ }catch(error){
+  console.error(error);
+  alert("Aggiornamento non riuscito. I dati cloud verranno ricaricati.");
+  if(window.firebaseReload) await window.firebaseReload();
+ }
+}
+
+function printReport(){
+ window.print();
+}
+
+function backup(){
+ const file=new Blob(
+  [JSON.stringify(db,null,2)],
+  {type:'application/json'}
+ );
+
+ const link=document.createElement('a');
+
+ link.href=URL.createObjectURL(file);
+ link.download=
+  'gestione-olio-'+
+  new Date().toISOString().slice(0,10)+
+  '.json';
+
+ link.click();
+ URL.revokeObjectURL(link.href);
+}
+
+function restore(file){
+ if(!file)return;
+
+ saveSafetyCopy();
+
+ const reader=new FileReader();
+
+ reader.onload=()=>{
+  try{
+   const imported=JSON.parse(reader.result);
+
+   if(
+    !imported.production||
+    !imported.reservations||
+    !imported.sales
+   ){
+    throw new Error('Backup non valido');
+   }
+
+   db=imported;
+   persist();
+   alert('Backup importato');
+  }catch{
+   alert('Backup non valido');
+  }
+ };
+
+ reader.readAsText(file);
+}
+
+function resetAll(){
+ if(typeof window.getCurrentRole==="function" &&
+    window.getCurrentRole()!=="admin"){
+  alert("Operazione riservata all'amministratore.");
+  return;
+ }
+ if(confirm('Cancellare tutti i dati locali? Il database Firebase non verrà cancellato da questa funzione.')){
+  saveSafetyCopy();
+  db={
+   production:[],
+   reservations:[],
+   sales:[]
+  };
+
+  persist();
+ }
+}
+
+render();
+
+renderClients();
+renderHistory();
+
+(function initSyncInfo(){
+ try{
+  const info=JSON.parse(localStorage.getItem(K+'.sync')||'null');
+  if(info&&info.lastSync){
+   updateSyncInfo('Ultima sincronizzazione: '+new Date(info.lastSync).toLocaleString('it-IT'));
+  }
+ }catch{}
+})();
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+ getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import {
+ getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+ collection, getDocs, query, orderBy, serverTimestamp,
+ onSnapshot, writeBatch
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyBwWKGurAiU2g_VZDe53Qg0PCTt9RwLN08",
+ authDomain: "gestione-olio-9cbf6.firebaseapp.com",
+ projectId: "gestione-olio-9cbf6",
+ storageBucket: "gestione-olio-9cbf6.firebasestorage.app",
+ messagingSenderId: "705290037208",
+ appId: "1:705290037208:web:c7f4146f589c4f512eb4ad",
+ measurementId: "G-5SN9SETZD5"
+};
+
+const INITIAL_ADMIN_EMAIL = "costantino.piedimonte@gmail.com";
+const appConfigured = true;
+const COLLECTIONS = ["production","reservations","sales"];
+
+let firebaseApp=null;
+let auth=null;
+let fs=null;
+let currentUser=null;
+let currentRole=null;
+let unsubscribeCollections=[];
+let cloudWriteBusy=false;
+let suppressLocalCloudSync=false;
+
+function roleLabel(role){
+ const labels={
+  admin:"Amministratore",
+  operator:"Operatore",
+  reader:"Sola lettura",
+  pending:"In attesa"
+ };
+ return labels[role]||role||"—";
+}
+
+function setupMessage(){
+ const gate=document.getElementById("authMessage");
+ if(gate) gate.textContent="Accedi per utilizzare Gestione Olio.";
+}
+
+function showGate(show){
+ const gate=document.getElementById("authGate");
+ if(gate) gate.style.display=show?"flex":"none";
+}
+
+function setAuthHeader(user,role){
+ const el=document.getElementById("authHeader");
+ const logout=document.getElementById("headerLogout");
+ if(!el)return;
+
+ if(!user){
+  el.innerHTML="";
+  if(logout) logout.style.display="none";
+  return;
+ }
+
+ const photo=user.photoURL
+  ?`<img src="${escapeHtml(user.photoURL)}" alt="">`
+  :"";
+
+ el.innerHTML=
+  `${photo}<span>${escapeHtml(user.displayName||user.email||"Utente")}<br>`+
+  `<span class="role-label role-${escapeHtml(role)}">${escapeHtml(roleLabel(role))}</span></span>`;
+
+ if(logout) logout.style.display="inline-block";
+}
+
+function roleCanWrite(){
+ return currentRole==="admin"||currentRole==="operator";
+}
+function roleCanDelete(){
+ return currentRole==="admin";
+}
+function roleCanAdmin(){
+ return currentRole==="admin";
+}
+
+function applyRoleToUI(){
+ const canWrite=roleCanWrite();
+ const canDelete=roleCanDelete();
+ const canAdmin=roleCanAdmin();
+
+ document.querySelectorAll('.btn.primary[onclick*="openForm"]').forEach(btn=>{
+  btn.style.display=canWrite?"":"none";
+ });
+
+ document.querySelectorAll('.delete').forEach(btn=>{
+  btn.style.display=canDelete?"":"none";
+ });
+
+ const usersPanel=document.getElementById("usersPanel");
+ const migrationPanel=document.getElementById("migrationPanel");
+ if(usersPanel) usersPanel.style.display=canAdmin?"block":"none";
+ if(migrationPanel) migrationPanel.style.display=canAdmin?"block":"none";
+
+ // Reader: disable status toggles and all editing controls.
+ document.querySelectorAll('.pill').forEach(btn=>{
+  btn.disabled=!canWrite;
+  btn.style.opacity=canWrite?"":"0.55";
+  btn.style.cursor=canWrite?"pointer":"not-allowed";
+ });
+}
+
+async function ensureUserProfile(user){
+ const ref=doc(fs,"users",user.uid);
+ const snap=await getDoc(ref);
+
+ if(!snap.exists()){
+  const role=(user.email||"").toLowerCase()===INITIAL_ADMIN_EMAIL.toLowerCase()
+   ?"admin"
+   :"pending";
+
+  await setDoc(ref,{
+   uid:user.uid,
+   email:user.email||"",
+   displayName:user.displayName||"",
+   photoURL:user.photoURL||"",
+   role,
+   createdAt:serverTimestamp(),
+   updatedAt:serverTimestamp()
+  });
+
+  return role;
+ }
+
+ return snap.data().role||"pending";
+}
+
+async function writeAudit(action,entity,entityId,details={}){
+ if(!currentUser||!fs)return;
+
+ try{
+  await setDoc(doc(collection(fs,"audit")),{
+   actorUid:currentUser.uid,
+   actorEmail:currentUser.email||"",
+   actorName:currentUser.displayName||"",
+   action,
+   entity,
+   entityId:String(entityId||""),
+   details,
+   createdAt:serverTimestamp()
+  });
+ }catch(e){
+  console.warn("Audit non salvato",e);
+ }
+}
+
+function unsubscribeCloud(){
+ unsubscribeCollections.forEach(fn=>{
+  try{fn();}catch{}
+ });
+ unsubscribeCollections=[];
+}
+
+function mergeRemoteIntoLocal(name,items){
+ db[name]=items;
+ localStorage.setItem(K,JSON.stringify(db));
+}
+
+function startRealtimeListeners(){
+ unsubscribeCloud();
+
+ COLLECTIONS.forEach(name=>{
+  const stop=onSnapshot(
+   collection(fs,name),
+   snapshot=>{
+    const items=[];
+    snapshot.forEach(d=>items.push({id:d.id,...d.data()}));
+
+    suppressLocalCloudSync=true;
+    mergeRemoteIntoLocal(name,items);
+    render();
+    renderClients();
+    renderHistory();
+    applyRoleToUI();
+    suppressLocalCloudSync=false;
+
+    setDriveStatus(
+     '☁️ Firebase · aggiornato '+new Date().toLocaleTimeString('it-IT')
+    );
+   },
+   error=>{
+    console.error("Listener "+name,error);
+    setDriveStatus("⚠️ Errore aggiornamento Firebase");
+   }
+  );
+  unsubscribeCollections.push(stop);
+ });
+}
+
+async function loadCloud(){
+ const out={production:[],reservations:[],sales:[]};
+
+ for(const name of COLLECTIONS){
+  const snap=await getDocs(collection(fs,name));
+  snap.forEach(d=>out[name].push({id:d.id,...d.data()}));
+ }
+
+ suppressLocalCloudSync=true;
+ db=out;
+ localStorage.setItem(K,JSON.stringify(db));
+ render();
+ renderClients();
+ renderHistory();
+ suppressLocalCloudSync=false;
+}
+
+async function saveCollection(name){
+ if(!currentUser||!roleCanWrite())return;
+
+ const batch=writeBatch(fs);
+
+ for(const item of (db[name]||[])){
+  const data={
+   ...item,
+   updatedBy:currentUser.uid,
+   updatedByEmail:currentUser.email||"",
+   updatedAt:serverTimestamp()
+  };
+  batch.set(doc(fs,name,String(item.id)),data,{merge:true});
+ }
+
+ await batch.commit();
+}
+
+async function syncCloud(){
+ if(!currentUser||!roleCanWrite()||cloudWriteBusy)return;
+
+ cloudWriteBusy=true;
+
+ try{
+  for(const name of COLLECTIONS){
+   await saveCollection(name);
+  }
+
+  await setDoc(doc(fs,"meta","app"),{
+   lastSyncAt:serverTimestamp(),
+   lastSyncBy:currentUser.uid,
+   lastSyncByEmail:currentUser.email||"",
+   updatedAt:serverTimestamp()
+  },{merge:true});
+
+  await writeAudit("sync","meta","app",{source:"client"});
+  setDriveStatus("☁️ Firebase sincronizzato · "+new Date().toLocaleTimeString('it-IT'));
+  updateSyncInfo("Ultima sincronizzazione cloud: "+new Date().toLocaleString("it-IT"));
+ }catch(error){
+  console.error(error);
+  setDriveStatus("⚠️ Sincronizzazione Firebase non riuscita");
+ }finally{
+  cloudWriteBusy=false;
+ }
+}
+
+async function createOrUpdateItem(sectionName,item){
+ if(!currentUser||!roleCanWrite())throw new Error("NOT_AUTHORIZED");
+
+ await setDoc(
+  doc(fs,sectionName,String(item.id)),
+  {
+   ...item,
+   updatedBy:currentUser.uid,
+   updatedByEmail:currentUser.email||"",
+   updatedAt:serverTimestamp()
+  },
+  {merge:true}
+ );
+
+ await writeAudit(
+  editing?"update":"create",
+  sectionName,
+  item.id,
+  {client:item.client||"",qty:item.qty||null}
+ );
+}
+
+async function removeCloudItem(sectionName,itemId){
+ if(!currentUser||!roleCanDelete())throw new Error("NOT_AUTHORIZED");
+
+ await deleteDoc(doc(fs,sectionName,String(itemId)));
+ await writeAudit("delete",sectionName,itemId,{});
+}
+
+async function loadUsers(){
+ if(!roleCanAdmin())return;
+
+ const snap=await getDocs(query(collection(fs,"users"),orderBy("email")));
+ const el=document.getElementById("usersList");
+ const panel=document.getElementById("usersPanel");
+
+ if(!el||!panel)return;
+
+ panel.style.display="block";
+
+ if(snap.empty){
+  el.innerHTML='<div class="empty">Nessun utente</div>';
+  return;
+ }
+
+ el.innerHTML="";
+
+ snap.forEach(s=>{
+  const u=s.data();
+  const row=document.createElement("div");
+  row.className="history-row";
+
+  row.innerHTML=`
+   <div>
+    <b>${escapeHtml(u.displayName||u.email||s.id)}</b>
+    <div class="history-meta">${escapeHtml(u.email||"")}</div>
+   </div>
+   <div class="actions">
+    <select class="btn" data-uid="${escapeHtml(s.id)}">
+     ${["pending","reader","operator","admin"].map(r=>
+      `<option value="${r}" ${u.role===r?"selected":""}>${roleLabel(r)}</option>`
+     ).join("")}
+    </select>
+   </div>`;
+
+  row.querySelector("select").onchange=async ev=>{
+   const role=ev.target.value;
+   const uid=s.id;
+
+   if(uid===currentUser.uid && role!=="admin"){
+    alert("Per sicurezza non puoi rimuovere da solo il ruolo amministratore.");
+    ev.target.value="admin";
+    return;
+   }
+
+   try{
+    await updateDoc(
+     doc(fs,"users",uid),
+     {
+      role,
+      updatedAt:serverTimestamp(),
+      updatedBy:currentUser.uid
+     }
+    );
+
+    await writeAudit("role_change","users",uid,{role});
+    alert("Ruolo aggiornato.");
+   }catch(error){
+    console.error(error);
+    alert("Impossibile aggiornare il ruolo.");
+    await loadUsers();
+   }
+  };
+
+  el.appendChild(row);
+ });
+}
+
+function escapeHtml(v=""){
+ return String(v).replace(
+  /[&<>"']/g,
+  c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])
+ );
+}
+
+async function importBackupToFirebase(file){
+ if(!file||!roleCanAdmin()){
+  alert("Operazione riservata all'amministratore.");
+  return;
+ }
+
+ const reader=new FileReader();
+
+ reader.onload=async()=>{
+  try{
+   const imported=JSON.parse(reader.result);
+
+   if(!imported.production||!imported.reservations||!imported.sales){
+    throw new Error("Backup non valido");
+   }
+
+   if(!confirm(
+    "Importare il backup nel database Firebase?\n\n"+
+    "I record con lo stesso ID verranno aggiornati. "+
+    "I record già presenti ma assenti nel backup NON verranno cancellati."
+   ))return;
+
+   const total=
+    imported.production.length+
+    imported.reservations.length+
+    imported.sales.length;
+
+   if(total>450){
+    alert("Il backup è troppo grande per questa importazione guidata. Dividilo in più operazioni.");
+    return;
+   }
+
+   const batch=writeBatch(fs);
+
+   for(const name of COLLECTIONS){
+    for(const item of imported[name]){
+     batch.set(
+      doc(fs,name,String(item.id||uid())),
+      {
+       ...item,
+       updatedBy:currentUser.uid,
+       updatedByEmail:currentUser.email||"",
+       updatedAt:serverTimestamp(),
+       importedAt:serverTimestamp()
+      },
+      {merge:true}
+     );
+    }
+   }
+
+   await batch.commit();
+
+   await writeAudit("import","backup","",{
+    production:imported.production.length,
+    reservations:imported.reservations.length,
+    sales:imported.sales.length
+   });
+
+   await loadCloud();
+   alert("Importazione completata.");
+  }catch(error){
+   console.error(error);
+   alert("Backup non valido o importazione non riuscita.");
+  }
+ };
+
+ reader.readAsText(file);
+}
+
+window.signInGestioneOlio=async()=>{
+ try{
+  await signInWithPopup(auth,new GoogleAuthProvider());
+ }catch(e){
+  console.error(e);
+  const msg=document.getElementById("authMessage");
+  if(msg)msg.textContent="Accesso non riuscito: "+(e.code||e.message);
+ }
+};
+
+window.signOutGestioneOlio=()=>signOut(auth);
+window.getCurrentRole=()=>currentRole;
+window.isAdminGestioneOlio=()=>roleCanAdmin();
+window.isOperatorGestioneOlio=()=>currentRole==="operator";
+window.isReaderGestioneOlio=()=>currentRole==="reader";
+window.firebaseSyncNow=syncCloud;
+window.firebaseReload=loadCloud;
+window.firebaseAudit=writeAudit;
+
+window.firebaseSaveItem=async(sectionName,item)=>{
+ if(!currentUser||!roleCanWrite())throw new Error("NOT_AUTHORIZED");
+
+ await setDoc(
+  doc(fs,sectionName,String(item.id)),
+  {
+   ...item,
+   updatedBy:currentUser.uid,
+   updatedByEmail:currentUser.email||"",
+   updatedAt:serverTimestamp()
+  },
+  {merge:true}
+ );
+};
+
+window.firebaseDeleteItem=async(sectionName,itemId)=>{
+ if(!currentUser||!roleCanDelete())throw new Error("NOT_AUTHORIZED");
+ await deleteDoc(doc(fs,sectionName,String(itemId)));
+};
+
+window.addEventListener("gestioneOlioSaved",async ev=>{
+ if(suppressLocalCloudSync)return;
+
+ if(!currentUser||!roleCanWrite())return;
+
+ try{
+  await syncCloud();
+ }catch(error){
+  console.error(error);
+ }
+});
+
+if(!appConfigured){
+ setupMessage();
+ showGate(true);
+}else{
+ firebaseApp=initializeApp(firebaseConfig);
+ auth=getAuth(firebaseApp);
+ fs=getFirestore(firebaseApp);
+
+ onAuthStateChanged(auth,async user=>{
+  unsubscribeCloud();
+  currentUser=user;
+
+  if(!user){
+   currentRole=null;
+   setAuthHeader(null,null);
+   setupMessage();
+   showGate(true);
+   setDriveStatus("☁️ Firebase · accesso richiesto");
+   return;
+  }
+
+  try{
+   currentRole=await ensureUserProfile(user);
+   setAuthHeader(user,currentRole);
+   applyRoleToUI();
+
+   if(currentRole==="pending"){
+    document.getElementById("authMessage").textContent=
+     "Account riconosciuto, ma ancora non autorizzato.";
+    document.getElementById("firebaseSetupNote").textContent=
+     "Chiedi all'amministratore di assegnarti il ruolo Operatore o Sola lettura.";
+    showGate(true);
+    return;
+   }
+
+   document.getElementById("authMessage").textContent="Accesso autorizzato.";
+   showGate(false);
+
+   // Firebase becomes the source of truth.
+   await loadCloud();
+   startRealtimeListeners();
+
+   if(currentRole==="admin"){
+    await loadUsers();
+   }
+
+   applyRoleToUI();
+
+   setDriveStatus(
+    "☁️ Firebase · "+roleLabel(currentRole)+
+    " · aggiornamento in tempo reale"
+   );
+  }catch(e){
+   console.error(e);
+   document.getElementById("authMessage").textContent=
+    "Errore nel caricamento dei dati: "+(e.code||e.message);
+   showGate(true);
+  }
+ });
+}
+</script>
+
+</body>
+</html>
