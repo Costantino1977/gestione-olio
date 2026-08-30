@@ -1173,5 +1173,17 @@ render();
  <button onclick="salvaDati()">Salva su Google Drive</button>
 <button onclick="leggiDati()">Leggi da Google Drive</button>
 <pre id="output"></pre>
+ <script>
+function gapiLoaded() {
+  gapi.load("client", initializeGapiClient);
+}
+
+function gisLoaded() {
+  // vuoto: google-drive.js gestisce tutto
+}
+</script>
+ <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script src="js/google-drive.js"></script>
 </body>
  </html>
