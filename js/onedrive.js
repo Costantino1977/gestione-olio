@@ -2,7 +2,7 @@
 
 const CLIENT_ID = "INSERISCI_IL_TUO_CLIENT_ID";
 const REDIRECT_URI = "https://costantino1977.github.io/gestione-olio/";
-const FOLDER_ID = "9879CD235CBFE234!105";
+const FOLDER_ID = "9879CD235CBFE234!110";
 const FILE_NAME = "dati-olio.json";
 
 // MSAL ---------------------------------------------------------------
