@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <title>Gestione Olio v2</title>
 
 <style>
@@ -359,7 +360,11 @@ dialog::backdrop{background:#14201999}
   <h1>🫒 Gestione Olio</h1>
   <small>Produzione, prenotazioni, vendite e disponibilità</small>
  </div>
- <button class="btn" onclick="backup()">Esporta backup</button>
+ <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+   <span id="driveStatus" style="font-size:13px;opacity:.9">☁️ Solo locale</span>
+   <button class="btn" onclick="connectGoogle()">Collega Google Drive</button>
+   <button class="btn" onclick="backup()">Esporta backup</button>
+  </div>
 </header>
 
 <div class="app">
@@ -539,18 +544,30 @@ dialog::backdrop{background:#14201999}
  <div class="setup">
 
   <div class="panel">
-   <h3>Backup</h3>
+   <h3>Backup e Google Drive</h3>
    <div class="pad">
-    <button class="btn primary" onclick="backup()">Esporta JSON</button>
+    <p class="note">
+     I dati restano nel browser finché non colleghi Google Drive.
+     Dopo il collegamento, l'archivio viene sincronizzato automaticamente
+     con un file privato nell'area applicativa di Google Drive.
+    </p>
+    <button class="btn primary" onclick="connectGoogle()">Collega / sincronizza Google Drive</button>
+    <button class="btn" onclick="syncNow()">Sincronizza ora</button>
 
-    <label class="btn">
-     Importa
-     <input
-      hidden
-      type="file"
-      accept="application/json"
-      onchange="restore(this.files[0])">
-    </label>
+    <div style="margin-top:12px">
+     <button class="btn" onclick="backup()">Esporta JSON</button>
+
+     <label class="btn">
+      Importa
+      <input
+       hidden
+       type="file"
+       accept="application/json"
+       onchange="restore(this.files[0])">
+     </label>
+    </div>
+
+    <p id="driveSettingsStatus" class="note" style="margin-top:12px"></p>
    </div>
   </div>
 
@@ -573,7 +590,9 @@ dialog::backdrop{background:#14201999}
    <h3>Archivio locale</h3>
    <div class="pad">
     <p class="note">
-     Finché il cloud non è configurato, i dati restano su questo browser.
+     I dati vengono sempre conservati localmente come sicurezza.
+     Se Google Drive è collegato, ogni modifica viene sincronizzata
+     automaticamente anche nell'archivio cloud.
     </p>
     <button class="btn danger" onclick="resetAll()">
      Cancella tutti i dati
@@ -646,9 +665,285 @@ function load(){
  }
 }
 
+/*
+ * GOOGLE DRIVE
+ * ------------------------------------------------------------
+ * 1) Crea un OAuth Client ID di tipo "Web application" in Google Cloud.
+ * 2) Inserisci il Client ID qui sotto.
+ * 3) Aggiungi l'origine esatta da cui servi questo file, ad esempio:
+ *    http://localhost:8000
+ *    oppure https://tuodominio.it
+ *
+ * L'app usa drive.appdata: il file dati è accessibile solo all'app
+ * e non viene mostrato normalmente nell'elenco dei file di Drive.
+ */
+const GOOGLE_CLIENT_ID = '583041191578-402k6rju6e31cce00mon38cshkd68j2q.apps.googleusercontent.com';
+const DRIVE_FILE_NAME = 'gestione-olio-v2.json';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+
+let googleToken = null;
+let googleTokenClient = null;
+let driveFileId = null;
+let driveReady = false;
+let driveSyncTimer = null;
+
+function setDriveStatus(text){
+ const el=document.getElementById('driveStatus');
+ const st=document.getElementById('driveSettingsStatus');
+ if(el) el.textContent=text;
+ if(st) st.textContent=text;
+}
+
 function persist(){
  localStorage.setItem(K,JSON.stringify(db));
  render();
+
+ // Salvataggio locale immediato; Drive viene sincronizzato senza bloccare l'interfaccia.
+ if(googleToken && driveReady){
+  clearTimeout(driveSyncTimer);
+  driveSyncTimer=setTimeout(()=>syncToDrive(),500);
+ }
+}
+
+function connectGoogle(){
+ if(!window.google || !google.accounts || !google.accounts.oauth2){
+  alert('Google Identity Services non è ancora disponibile. Attendi qualche secondo e riprova.');
+  return;
+ }
+
+ if(GOOGLE_CLIENT_ID.startsWith('INSERISCI_')){
+  alert('Prima inserisci il Google OAuth Client ID nella costante GOOGLE_CLIENT_ID del file HTML.');
+  return;
+ }
+
+ if(!googleTokenClient){
+  googleTokenClient=google.accounts.oauth2.initTokenClient({
+   client_id:GOOGLE_CLIENT_ID,
+   scope:DRIVE_SCOPE,
+   callback:async (response)=>{
+    if(response.error){
+     console.error(response);
+     setDriveStatus('☁️ Errore collegamento Google');
+     alert('Impossibile collegare Google Drive.');
+     return;
+    }
+
+    googleToken=response.access_token;
+    driveReady=true;
+    setDriveStatus('☁️ Google Drive collegato');
+    await loadFromDrive();
+   }
+  });
+ }
+
+ googleTokenClient.requestAccessToken({
+  prompt: googleToken ? '' : 'consent'
+ });
+}
+
+async function driveFetch(url, options={}){
+ if(!googleToken) throw new Error('Google Drive non collegato');
+
+ const headers=Object.assign({},options.headers||{},{
+  Authorization:'Bearer '+googleToken
+ });
+
+ const response=await fetch(url,Object.assign({},options,{headers}));
+
+ if(response.status===401){
+  googleToken=null;
+  driveReady=false;
+  setDriveStatus('☁️ Sessione Google scaduta — ricollega Drive');
+  throw new Error('Sessione Google scaduta');
+ }
+
+ if(!response.ok){
+  const text=await response.text();
+  throw new Error(text||('HTTP '+response.status));
+ }
+
+ return response;
+}
+
+async function findDriveFile(){
+ const q=
+  "name='"+DRIVE_FILE_NAME.replace(/'/g,"\\'")+
+  "' and trashed=false";
+
+ const url=
+  'https://www.googleapis.com/drive/v3/files'+
+  '?spaces=appDataFolder'+
+  '&q='+encodeURIComponent(q)+
+  '&fields=files(id,name,modifiedTime)';
+
+ const response=await driveFetch(url);
+ const data=await response.json();
+
+ return data.files && data.files.length
+  ?data.files[0]
+  :null;
+}
+
+async function createDriveFile(){
+ const metadata={
+  name:DRIVE_FILE_NAME,
+  parents:['appDataFolder'],
+  mimeType:'application/json'
+ };
+
+ const boundary='-------gestioneolio'+Date.now();
+ const body=
+  '--'+boundary+'\r\n'+
+  'Content-Type: application/json; charset=UTF-8\r\n\r\n'+
+  JSON.stringify(metadata)+'\r\n'+
+  '--'+boundary+'\r\n'+
+  'Content-Type: application/json\r\n\r\n'+
+  JSON.stringify(db)+'\r\n'+
+  '--'+boundary+'--';
+
+ const response=await driveFetch(
+  'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime',
+  {
+   method:'POST',
+   headers:{
+    'Content-Type':'multipart/related; boundary='+boundary
+   },
+   body
+  }
+ );
+
+ return response.json();
+}
+
+async function updateDriveFile(){
+ if(!driveFileId) return;
+
+ const response=await driveFetch(
+  'https://www.googleapis.com/upload/drive/v3/files/'+
+  encodeURIComponent(driveFileId)+
+  '?uploadType=media',
+  {
+   method:'PATCH',
+   headers:{
+    'Content-Type':'application/json'
+   },
+   body:JSON.stringify(db)
+  }
+ );
+
+ return response.json();
+}
+
+async function syncToDrive(){
+ if(!googleToken || !driveReady) return;
+
+ try{
+  setDriveStatus('☁️ Salvataggio su Google Drive…');
+
+  if(!driveFileId){
+   const existing=await findDriveFile();
+
+   if(existing){
+    driveFileId=existing.id;
+   }
+  }
+
+  if(driveFileId){
+   await updateDriveFile();
+  }else{
+   const created=await createDriveFile();
+   driveFileId=created.id;
+  }
+
+  setDriveStatus('☁️ Salvato su Google Drive · '+new Date().toLocaleTimeString('it-IT'));
+ }catch(error){
+  console.error(error);
+  setDriveStatus('⚠️ Salvataggio Drive non riuscito — dati locali conservati');
+ }
+}
+
+async function loadFromDrive(){
+ try{
+  setDriveStatus('☁️ Controllo archivio Google Drive…');
+
+  const existing=await findDriveFile();
+
+  if(!existing){
+   const answer=confirm(
+    'Non esiste ancora un archivio Gestione Olio su Google Drive. '+
+    'Vuoi creare quello attuale del browser?'
+   );
+
+   if(answer){
+    const created=await createDriveFile();
+    driveFileId=created.id;
+    setDriveStatus('☁️ Archivio creato su Google Drive');
+   }else{
+    setDriveStatus('☁️ Google Drive collegato · non sincronizzato');
+   }
+   return;
+  }
+
+  driveFileId=existing.id;
+
+  const response=await driveFetch(
+   'https://www.googleapis.com/drive/v3/files/'+
+   encodeURIComponent(driveFileId)+
+   '?alt=media'
+  );
+
+  const remote=await response.json();
+
+  if(!remote.production || !remote.reservations || !remote.sales){
+   throw new Error('Archivio Google Drive non valido');
+  }
+
+  const localString=localStorage.getItem(K);
+  const localHasData=
+   localString &&
+   (db.production.length||db.reservations.length||db.sales.length);
+
+  if(localHasData){
+   const answer=confirm(
+    'Sono presenti dati sia nel browser sia su Google Drive.\\n\\n'+
+    'OK = usa i dati di Google Drive\\n'+
+    'Annulla = mantiene i dati locali e li salva su Drive'
+   );
+
+   if(!answer){
+    await syncToDrive();
+    return;
+   }
+  }
+
+  db=Object.assign({
+   production:[],
+   reservations:[],
+   sales:[]
+  },remote);
+
+  localStorage.setItem(K,JSON.stringify(db));
+  render();
+
+  setDriveStatus(
+   '☁️ Sincronizzato da Google Drive · '+
+   (existing.modifiedTime
+    ?new Date(existing.modifiedTime).toLocaleString('it-IT')
+    :'ora')
+  );
+ }catch(error){
+  console.error(error);
+  setDriveStatus('⚠️ Lettura Drive non riuscita — uso i dati locali');
+ }
+}
+
+async function syncNow(){
+ if(!googleToken){
+  connectGoogle();
+  return;
+ }
+
+ await syncToDrive();
 }
 
 function uid(){
